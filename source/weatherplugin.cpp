@@ -26,7 +26,7 @@ WeatherPlugin::WeatherPlugin (QObject *parent):
 {
 }
 
-WeatherPlugin::~WeatherPlugin () {
+WeatherPlugin::~WeatherPlugin() {
     log.flush();
     logFile.close();
     delete m_popups;
@@ -82,6 +82,9 @@ void WeatherPlugin::init(PluginProxyInterface *proxyInter) {
             &m_refershTimer, QOverload<>::of(&QTimer::start)); // restart timer
     connect(this, &WeatherPlugin::checkUpdate,
             m_client, QOverload<>::of(&WeatherClient::checkWeather));
+    connect(m_items, &WeatherItem::requestUpdateGeometry, [this] {
+            m_proxyInter->itemUpdate(this, pluginName());
+    });
 
     if(!pluginIsDisable()) {
         this->m_proxyInter->itemAdded(this, WEATHER_KEY);

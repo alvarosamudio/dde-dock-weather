@@ -40,8 +40,6 @@ public:
     bool ischecking() const {return checking;}
     /** Set appid (globally). Empty string to reset. */
     static void setAppid(const QString &key);
-    QDateTime sunrise;
-    QDateTime sunset; 
     struct CityInfo {
         int id; QString name; QString country;
         double lat; double lon; // longitude and latitude
@@ -129,34 +127,32 @@ public:
                            QObject *parent = nullptr);
     virtual ~WeatherClient() override;
 
-    static QMap<QString, QString> WeatherDict;
-    static void setupWeatherDict();
+//    static QMap<QString, QString> WeatherDict;
+//    static void setupWeatherDict();
 
     int cityID() const {return cityid;}
     const QString &cityName() const {return city;}
     const QString &countryName() const {return country;}
-    const QDateTime &lastUpdate() const {return last;}
-    const QString weatherNowText() const {
-        return wnow.description;
-        return wnow.weather;}
-    const QString &weatherNowDesc() const {return wnow.description;}
+//    const QDateTime &lastUpdate() const {return last;}
+//    const QString weatherNowText() const {
+//        return wnow.description;
+//        return wnow.weather;}
+//    const QString &weatherNowDesc() const {return wnow.description;}
     const QString &weatherNowIcon() const {return wnow.icon;}
     const Weather &weatherNow() const {return wnow;}
     inline QString tempUnit() const {return isMetric? "°C" : "°F";}
     inline QString windUnit() const {return isMetric? tr("m/s") : "mi/h";}
     QString tempNow() const {
-        return QString::number(wnow.temp, 'f', 1) + " " + tempUnit();}
+        return QString::number(wnow.temp, 'f', 1).replace(".0", "") + " " + tempUnit();}
     QString windDir() const {
-	QStringList labels({
-			tr("N"), tr("NE"), tr("E"), tr("SE"),
-			tr("S"), tr("SW"), tr("W"), tr("NW"),
-	});
-	return labels[(qRound(wnow.windDeg + 180.0 / labels.size(
-                    )) * labels.size() / 360) % labels.size()];
+    QStringList labels({tr("N"), tr("NE"), tr("E"), tr("SE"),
+                        tr("S"), tr("SW"), tr("W"), tr("NW")});
+        return labels[(qRound(wnow.windDeg + 180.0 / labels.size()) *
+                        labels.size() / 360) % labels.size()];
     }
     QString tipNow() const {
-        return QString("%1, %2\n%3, %4\n").arg(city).arg(
-                    country).arg(tempNow()).arg(wnow.description) +
+        return QString("%1, %2\n%3\n%4\n").arg(city).arg(
+                    country).arg(tempNow()).arg(wnow.description.at(0).toUpper() + wnow.description.mid(1)) +
                 tr("Humidity %1%\n").arg(wnow.humidity) +
                 tr("Clouds %1%\n").arg(wnow.clouds) +
                 tr("Wind %1 %2, %3\n").arg(wnow.wind).arg(windUnit()).arg(windDir()) +
@@ -191,8 +187,6 @@ public slots:
      * and according to #cityid, update #city and #country. */
     void checkWeather(int timeout);
     void checkWeather() {return checkWeather(60000);}  //Overload 1min for timeout
-
-private slots:
     void parseWeather();
     void parseForecast();
     void errorHandle(ErrorCode) override;
@@ -205,6 +199,8 @@ private:
     QString country;
     bool isMetric; // imperial or metric
     QString lang;
+    QDateTime sunrise;
+    QDateTime sunset;
     QDateTime last;
     QVector<Weather> forecasts;
     Weather wnow;
